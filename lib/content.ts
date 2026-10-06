@@ -83,8 +83,11 @@ export const VERDICT_LABEL: Record<Verdict, string> = {
 export const VERDICT_BARS: Record<Verdict, number> = { saved: 4, resist: 2, damned: 1 };
 export const MAX_BARS = 4;
 
-export function scoreFor(s1: number, s2: number) {
-  return (s1 + s2) * POINTS_PER_NOTE;
+// Caso mais difícil vale mais no ranking (senão todo mundo escolhe o fácil)
+export const DIFF_MULT: Record<string, number> = { "FÁCIL": 1, "MÉDIO": 1.25, "DIFÍCIL": 1.5 };
+
+export function scoreFor(s1: number, s2: number, difficulty: string) {
+  return Math.round((s1 + s2) * POINTS_PER_NOTE * (DIFF_MULT[difficulty] ?? 1));
 }
 
 // ---------------- Patentes ----------------
@@ -92,8 +95,8 @@ export const RANKS = [
   { min: 0, name: "Estagiário", emoji: "🐣", say: "Todo mundo começa em algum lugar. O café ainda é por sua conta." },
   { min: 300, name: "Júnior", emoji: "🌱", say: "Já dá para confiar numa tarefa pequena, com revisão." },
   { min: 500, name: "Pleno", emoji: "🚀", say: "Bom resultado. Já pode errar sozinho sem avisar ninguém. É um elogio." },
-  { min: 700, name: "Sênior", emoji: "🧠", say: "Resultado de quem já viu muita coisa. Pode sentar na cabeceira da mesa." },
-  { min: 900, name: "Lenda", emoji: "👑", say: "Eu ia dar um conselho, mas acho que quem aprende aqui sou eu." },
+  { min: 800, name: "Sênior", emoji: "🧠", say: "Resultado de quem já viu muita coisa. Pode sentar na cabeceira da mesa." },
+  { min: 1100, name: "Lenda", emoji: "👑", say: "Eu ia dar um conselho, mas acho que quem aprende aqui sou eu." },
 ];
 
 export function rankFor(score: number) {
@@ -120,3 +123,32 @@ export const JUDGING_LINES = [
 export const REACT_OK = ["Boa.", "Isso aí.", "Direto ao ponto.", "Sinal forte."];
 export const REACT_MID = ["Dá para melhorar.", "Chegou perto.", "Sinal oscilando."];
 export const REACT_LOW = ["Não foi dessa vez.", "Sinal fraco.", "Faz parte."];
+
+// ---------------- Narrativa ----------------
+// Prólogo: o primeiro dia na ADDSALES. Cada fala é uma tela (toque para avançar).
+export const PROLOGUE = [
+  { clock: "09:00", mood: "happy" as const, text: "Segunda-feira, 9h. Bem-vindo à ADDSALES. Eu sou o Pingo e cuido do sinal por aqui." },
+  { clock: "09:02", mood: "wow" as const, text: "A Claro Internet vai lançar uma campanha nova, e o time está no limite. Precisamos de reforço." },
+  { clock: "09:05", mood: "idle" as const, text: "Seu trabalho hoje: convencer quem precisa ser convencido. Cliente, diretora, colega. Com argumento, não com volume de voz." },
+  { clock: "09:06", mood: "happy" as const, text: "Eu avalio cada argumento de 0 a 10. Duas chances por caso. Escolha sua mesa." },
+];
+
+// Relógio da história em cada etapa
+export const CLOCK = { career: "09:10", cases: "09:15", briefing: "10:30", duel: "10:32", verdict: "11:00", end: "18:00" };
+
+// Critérios visíveis antes de escrever (iguais aos do Árbitro)
+export const CRITERIA = [
+  { label: "Pertinência", max: 3, hint: "respondeu ao que foi perguntado" },
+  { label: "Base técnica", max: 4, hint: "conceito, prática ou evidência da área" },
+  { label: "Clareza", max: 3, hint: "dá para entender e convence" },
+];
+
+// Começos de frase para destravar a escrita no celular
+export const STARTERS_1 = ["O número mostra que", "Eu começaria por", "Na prática, eu faria", "O risco de fazer isso é", "Um teste simples seria"];
+export const STARTERS_2 = ["Entendo a objeção, mas", "Um exemplo concreto:", "Para provar, eu mediria", "Se der errado, o plano B é"];
+
+export const EPILOGUE: Record<Verdict, string> = {
+  saved: "Fim do expediente. Caso resolvido, cliente satisfeito. Na ADDSALES, isso é um dia comum.",
+  resist: "Fim do expediente. O caso ficou em aberto, mas a conversa avançou. Amanhã tem mais.",
+  damned: "Fim do expediente. Nem todo dia fecha bem. O que importa é voltar amanhã com um argumento melhor.",
+};

@@ -3,9 +3,10 @@ import { useEffect, useState } from "react";
 import type { Career } from "@/lib/content";
 import type { Persona } from "@/lib/personas";
 import { Duel, type DuelResult } from "@/components/Duel";
+import { Prologue } from "@/components/Prologue";
 import { Title, CareerPick, CasePick, Result, LeadForm, Ranking } from "@/components/Screens";
 
-type Screen = "title" | "career" | "cases" | "duel" | "result" | "lead" | "ranking";
+type Screen = "title" | "prologue" | "career" | "cases" | "duel" | "result" | "lead" | "ranking";
 
 const IDLE_MS = 60_000; // modo totem: volta ao início sem toque por 1 minuto
 
@@ -53,6 +54,9 @@ export default function Game() {
     setScreen("title");
   }
 
+  if (screen === "prologue") {
+    return <Prologue onDone={() => setScreen("career")} />;
+  }
   if (screen === "career") {
     return (
       <CareerPick
@@ -108,5 +112,5 @@ export default function Game() {
   if (screen === "ranking" && result) {
     return <Ranking position={position} myScore={result.score} onAgain={totem ? goHome : () => setScreen("cases")} />;
   }
-  return <Title totem={totem} onStart={() => setScreen("career")} />;
+  return <Title totem={totem} onStart={() => setScreen("prologue")} />;
 }

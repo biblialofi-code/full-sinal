@@ -3,10 +3,12 @@ import { useEffect, useRef, useState } from "react";
 import { AnimatePresence, motion } from "framer-motion";
 import type { Persona } from "@/lib/personas";
 import {
+  CLOCK,
+  CRITERIA,
+  DIFF_MULT,
   JUDGING_LINES,
-  REACT_LOW,
-  REACT_MID,
-  REACT_OK,
+  STARTERS_1,
+  STARTERS_2,
   VERDICT_LABEL,
   pingoVerdictLine,
   scoreFor,
@@ -15,13 +17,13 @@ import {
 } from "@/lib/content";
 import { playSfx } from "@/lib/sfx";
 import { Pingo, Professor } from "./Signal";
+import { Clock, useTypewriter } from "./Prologue";
 
 export type DuelResult = { persona: Persona; verdict: Verdict; s1: number; s2: number; total: number; score: number; mode: "ai" | "fallback" };
 
 type Feedback = { score: number; summary: string; good: string; missing: string; study: string; up?: string };
 
 const MAX = 600;
-const rand = (a: string[]) => a[Math.floor(Math.random() * a.length)];
 
 async function post<T>(body: Record<string, unknown>): Promise<T & { source: "ai" | "fallback" }> {
   const ctrl = new AbortController();
@@ -43,20 +45,21 @@ function Judging() {
   }, []);
   return (
     <motion.div className="judging" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}>
-      <Pingo size={130} mood="idle" />
+      <Pingo size={140} mood="idle" />
       <div className="judgingline">{JUDGING_LINES[i]}</div>
       <div className="dots"><i /><i /><i /></div>
     </motion.div>
   );
 }
 
-function FeedbackCard({ n, f, mood }: { n: 1 | 2; f: Feedback; mood: "happy" | "sad" | "idle" }) {
+function FeedbackCard({ n, f }: { n: 1 | 2; f: Feedback }) {
+  const mood = f.score >= 7 ? "happy" : f.score >= 5 ? "idle" : "sad";
   return (
     <motion.div className="fcard" initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }}>
       <div className="fhead">
         <Professor size={46} mood={mood} />
         <div style={{ flex: 1 }}>
-          <div className="fkicker">Argumento {n}</div>
+          <div className="fkicker">Pingo · argumento {n}</div>
           <div className="fsummary">{f.summary}</div>
         </div>
         <div className="fscore"><b>{f.score}</b>/10</div>
@@ -69,22 +72,141 @@ function FeedbackCard({ n, f, mood }: { n: 1 | 2; f: Feedback; mood: "happy" | "
   );
 }
 
-function PersonaBubble({ p, text, tag }: { p: Persona; text: string; tag?: string }) {
+function Avatar({ p, size = 54 }: { p: Persona; size?: number }) {
+  return (
+    <div className="pavatar" style={{ background: p.color, width: size, height: size, fontSize: size * 0.52 }}>{p.emoji}</div>
+  );
+}
+
+function PersonaSays({ p, text, tag, typed }: { p: Persona; text: string; tag?: string; typed?: boolean }) {
+  const tw = useTypewriter(text, typed ? 20 : 0);
   return (
     <div className="pcard">
-      <div className="pavatar" style={{ background: p.color }}>{p.emoji}</div>
+      <Avatar p={p} />
       <div className="pbody">
         <div className="pname">{p.name} <span>{p.archetype}</span></div>
         {tag && <div className="ptag">{tag}</div>}
-        <div className="pspeech">{text}</div>
+        <div className="pspeech" onClick={tw.finish}>{typed ? tw.shown : text}</div>
       </div>
     </div>
   );
 }
 
+function Composer({
+  label,
+  value,
+  onChange,
+  starters,
+  busy,
+  err,
+  onSend,
+  placeholder,
+}: {
+  label: string;
+  value: string;
+  onChange: (v: string) => void;
+  starters: string[];
+  busy: boolean;
+  err: string;
+  onSend: () => void;
+  placeholder: string;
+}) {
+  const ref = useRef<HTMLTextAreaElement>(null);
+  function addStarter(s: string) {
+    const sep = value && !/\s$/.test(value) ? " " : "";
+    const next = (value + sep + s + " ").slice(0, MAX);
+    onChange(next);
+    playSfx("tap", 0.3);
+    requestAnimationFrame(() => {
+      const el = ref.current;
+      if (el) {
+        el.focus();
+        el.setSelectionRange(next.length, next.length);
+      }
+    });
+  }
+  const tooShort = value.trim().length < 40;
+  return (
+    <div className="pad composer">
+      <div className="alabel">{label}</div>
+      <div className="starters">
+        {starters.map((s) => (
+          <button key={s} type="button" className="starter" disabled={busy} onClick={() => addStarter(s)}>{s}…</button>
+        ))}
+      </div>
+      <textarea ref={ref} className="answer" value={value} maxLength={MAX} disabled={busy} placeholder={placeholder} onChange={(e) => onChange(e.target.value)} />
+      <div className="count">
+        <span className={tooShort ? "" : "okc"}>{tooShort ? "Dica: 2 ou 3 frases rendem mais pontos" : "Bom tamanho ✓"}</span>
+        <span>{value.length}/{MAX}</span>
+      </div>
+      {err && <div className="formerr">{err}</div>}
+      <button className="cta g" disabled={busy || value.trim().length < 3} style={value.trim().length < 3 ? { opacity: 0.55 } : undefined} onClick={onSend}>
+        Enviar argumento
+      </button>
+    </div>
+  );
+}
+
+function VerdictReveal({ p, s1, s2, mode, onNext }: { p: Persona; s1: number; s2: number; mode: "ai" | "fallback"; onNext: () => void }) {
+  const total = s1 + s2;
+  const v = verdictFor(total, p.dc);
+  const [stage, setStage] = useState(0); // 0 enchendo, 1 veredito, 2 reação
+  useEffect(() => {
+    const a = setTimeout(() => {
+      setStage(1);
+      playSfx(v === "saved" ? "levelup" : v === "resist" ? "complete" : "wrong");
+    }, 1700);
+    const b = setTimeout(() => setStage(2), 2600);
+    return () => {
+      clearTimeout(a);
+      clearTimeout(b);
+    };
+  }, [v]);
+
+  return (
+    <motion.div className={"reveal " + (stage ? v : "")} initial={{ opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }}>
+      <Clock time={CLOCK.verdict} />
+      <div className="rtitle">O veredito de {p.name}</div>
+      <div className="meter">
+        <motion.i className="seg s1" initial={{ width: 0 }} animate={{ width: `${(s1 / 20) * 100}%` }} transition={{ duration: 0.7, ease: "easeOut" }} />
+        <motion.i className="seg s2" initial={{ width: 0 }} animate={{ width: `${(s2 / 20) * 100}%` }} transition={{ duration: 0.7, delay: 0.75, ease: "easeOut" }} />
+        <div className="dcmark" style={{ left: `${(p.dc / 20) * 100}%` }}><span>DC {p.dc}</span></div>
+      </div>
+      <div className="mlegend">
+        <span>Arg. 1 <b>{s1}</b></span>
+        <span>Arg. 2 <b>{s2}</b></span>
+        <span>Total <b>{total}</b>/20</span>
+      </div>
+
+      <AnimatePresence>
+        {stage >= 1 && (
+          <motion.div className="vlabel" initial={{ scale: 0.5, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 260, damping: 13 }}>
+            {VERDICT_LABEL[v]}
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {stage >= 2 && (
+        <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }}>
+          <div className="react">
+            <Avatar p={p} size={46} />
+            <div className="pspeech">{p.react[v]}</div>
+          </div>
+          <div className="profrow" style={{ padding: "10px 0 0" }}>
+            <Professor size={46} mood={v === "saved" ? "happy" : v === "damned" ? "sad" : "idle"} />
+            <div className="bubble">{pingoVerdictLine(v)}</div>
+          </div>
+          {mode === "fallback" && <div className="vnote">Avaliação automática simplificada (a IA ficou indisponível).</div>}
+          <button className="cta g" onClick={onNext}>Encerrar o expediente</button>
+        </motion.div>
+      )}
+    </motion.div>
+  );
+}
+
 export function Duel({ persona, onExit, onDone }: { persona: Persona; onExit: () => void; onDone: (r: DuelResult) => void }) {
-  type Phase = "intro" | "a1" | "judging1" | "a2" | "judging2" | "done";
-  const [phase, setPhase] = useState<Phase>("intro");
+  type Phase = "brief" | "a1" | "judging1" | "a2" | "judging2" | "done";
+  const [phase, setPhase] = useState<Phase>("brief");
   const [a1, setA1] = useState("");
   const [a2, setA2] = useState("");
   const [f1, setF1] = useState<Feedback | null>(null);
@@ -92,17 +214,14 @@ export function Duel({ persona, onExit, onDone }: { persona: Persona; onExit: ()
   const [contra, setContra] = useState("");
   const [err, setErr] = useState("");
   const [mode, setMode] = useState<"ai" | "fallback">("ai");
-  const bottom = useRef<HTMLDivElement>(null);
+  const anchor = useRef<HTMLDivElement>(null);
 
+  // leva a tela até o novo bloco (feedback, réplica, veredito)
   useEffect(() => {
-    bottom.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [phase, f1, f2]);
-
-  const reactFor = (s: number) => rand(s >= 7 ? REACT_OK : s >= 5 ? REACT_MID : REACT_LOW);
-  const moodFor = (s: number) => (s >= 7 ? "happy" : s >= 5 ? "idle" : "sad");
+    if (phase === "a2" || phase === "done") anchor.current?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }, [phase]);
 
   async function sendFirst() {
-    if (a1.trim().length < 3) return setErr("Escreva seu argumento antes de enviar.");
     setErr("");
     setPhase("judging1");
     playSfx("tap", 0.4);
@@ -131,9 +250,6 @@ export function Duel({ persona, onExit, onDone }: { persona: Persona; onExit: ()
       const j = await post<Feedback>({ step: "arg2", personaId: persona.id, answer: a2, answer1: a1, score1: f1.score, contra });
       if (j.source === "fallback") setMode("fallback");
       setF2(j);
-      const total = f1.score + j.score;
-      const verdict = verdictFor(total, persona.dc);
-      playSfx(verdict === "saved" ? "levelup" : verdict === "resist" ? "complete" : "wrong");
       setPhase("done");
     } catch {
       setErr("O sinal falhou. Tente enviar novamente.");
@@ -141,9 +257,7 @@ export function Duel({ persona, onExit, onDone }: { persona: Persona; onExit: ()
     }
   }
 
-  const total = (f1?.score ?? 0) + (f2?.score ?? 0);
-  const verdict = verdictFor(total, persona.dc);
-  const step = phase === "intro" ? 0 : phase === "a1" || phase === "judging1" ? 1 : phase === "a2" || phase === "judging2" ? 2 : 3;
+  const step = phase === "brief" ? 0 : phase === "a1" || phase === "judging1" ? 1 : phase === "a2" || phase === "judging2" ? 2 : 3;
 
   return (
     <div className="screen duel">
@@ -154,86 +268,88 @@ export function Duel({ persona, onExit, onDone }: { persona: Persona; onExit: ()
       </div>
 
       <div className="duelbody">
-        <PersonaBubble p={persona} text={persona.question} tag={`${persona.difficulty} · convencer exige ${persona.dc} de 20`} />
-
-        {phase === "intro" && (
-          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} className="pad">
-            <div className="rulebox">
-              Você terá <b>dois argumentos</b>. Eu avalio cada um de 0 a 10. Se a soma chegar a <b>{persona.dc}</b>, a persona se convence.
+        {/* Briefing: a cena antes da conversa */}
+        {phase === "brief" ? (
+          <motion.div className="brief" initial={{ opacity: 0, y: 12 }} animate={{ opacity: 1, y: 0 }}>
+            <Clock time={CLOCK.briefing} />
+            <div className="bhead">
+              <Avatar p={persona} size={84} />
+              <div>
+                <div className="bkicker">Seu próximo caso</div>
+                <div className="bname">{persona.name}</div>
+                <div className="barch">{persona.archetype}</div>
+              </div>
             </div>
-            <button className="cta g" onClick={() => setPhase("a1")}>Argumentar</button>
+            <div className="bscene">📍 {persona.context}</div>
+            <div className="bstakes"><b>O que está em jogo</b>{persona.stakes}</div>
+            <div className="bcrit">
+              <div className="bcrit-t">Como o Pingo avalia cada argumento</div>
+              {CRITERIA.map((c) => (
+                <div key={c.label} className="crit"><span>{c.label}</span><em>{c.hint}</em><b>{c.max} pts</b></div>
+              ))}
+              <div className="bcrit-f">Dois argumentos. Para convencer, a soma precisa chegar a <b>{persona.dc}</b> de 20.{persona.difficulty !== "FÁCIL" && <> Caso {persona.difficulty.toLowerCase()} vale <b>×{DIFF_MULT[persona.difficulty]}</b> no ranking.</>}</div>
+            </div>
+            <button className="cta g" onClick={() => setPhase("a1")}>Entrar na conversa</button>
           </motion.div>
+        ) : (
+          <>
+            <Clock time={CLOCK.duel} />
+            <PersonaSays p={persona} text={persona.question} tag={persona.difficulty} typed={phase === "a1"} />
+          </>
         )}
 
         {(phase === "a1" || phase === "judging1") && (
-          <div className="pad">
-            <div className="alabel">Seu 1º argumento</div>
-            <textarea
-              className="answer"
-              value={a1}
-              maxLength={MAX}
-              disabled={phase === "judging1"}
-              autoFocus
-              placeholder="Explique com suas palavras. Conceito, exemplo e uma ação concreta valem pontos."
-              onChange={(e) => setA1(e.target.value)}
-            />
-            <div className="count">{a1.length}/{MAX}</div>
-            {err && <div className="formerr">{err}</div>}
-            <button className="cta g" disabled={phase === "judging1"} onClick={sendFirst}>Enviar argumento</button>
-          </div>
+          <Composer
+            label="Seu 1º argumento"
+            value={a1}
+            onChange={setA1}
+            starters={STARTERS_1}
+            busy={phase === "judging1"}
+            err={err}
+            onSend={sendFirst}
+            placeholder="Explique com suas palavras. Conceito, exemplo e uma ação concreta valem pontos."
+          />
         )}
 
-        {f1 && (phase === "a2" || phase === "judging2" || phase === "done") && (
+        {f1 && phase !== "a1" && phase !== "judging1" && phase !== "brief" && (
           <>
             <div className="yoububble"><span>Você</span>{a1}</div>
-            <FeedbackCard n={1} f={f1} mood={moodFor(f1.score)} />
-            <PersonaBubble p={persona} text={contra} tag="Réplica" />
+            <div ref={phase === "a2" ? anchor : undefined} />
+            <FeedbackCard n={1} f={f1} />
+            <PersonaSays p={persona} text={contra} tag="Réplica" typed={phase === "a2"} />
           </>
         )}
 
         {(phase === "a2" || phase === "judging2") && (
-          <div className="pad">
-            <div className="alabel">Seu 2º argumento: responda à réplica</div>
-            <textarea
-              className="answer"
-              value={a2}
-              maxLength={MAX}
-              disabled={phase === "judging2"}
-              autoFocus
-              placeholder="Aprofunde. Enfrente a objeção sem repetir o que já disse."
-              onChange={(e) => setA2(e.target.value)}
-            />
-            <div className="count">{a2.length}/{MAX}</div>
-            {err && <div className="formerr">{err}</div>}
-            <button className="cta g" disabled={phase === "judging2"} onClick={sendSecond}>Enviar argumento</button>
-          </div>
+          <Composer
+            label="Seu 2º argumento: responda à réplica"
+            value={a2}
+            onChange={setA2}
+            starters={STARTERS_2}
+            busy={phase === "judging2"}
+            err={err}
+            onSend={sendSecond}
+            placeholder="Aprofunde. Enfrente a objeção sem repetir o que já disse."
+          />
         )}
 
-        {f2 && phase === "done" && (
+        {f1 && f2 && phase === "done" && (
           <>
             <div className="yoububble"><span>Você</span>{a2 || "(sem resposta)"}</div>
-            <FeedbackCard n={2} f={f2} mood={moodFor(f2.score)} />
-            <motion.div className={"verdict " + verdict} initial={{ scale: 0.9, opacity: 0 }} animate={{ scale: 1, opacity: 1 }} transition={{ type: "spring", stiffness: 240, damping: 16 }}>
-              <div className="vbar">
-                <span>ARG.1 <b>{f1?.score}</b></span>
-                <span>+</span>
-                <span>ARG.2 <b>{f2.score}</b></span>
-                <span>=</span>
-                <span>TOTAL <b>{total}</b> / DC <b>{persona.dc}</b></span>
-              </div>
-              <div className="vlabel">{VERDICT_LABEL[verdict]}</div>
-              <div className="vsay">{reactFor(f2.score)} {pingoVerdictLine(verdict)}</div>
-              {mode === "fallback" && <div className="vnote">Avaliação automática simplificada (a IA ficou indisponível).</div>}
-              <button
-                className="cta g"
-                onClick={() => onDone({ persona, verdict, s1: f1?.score ?? 0, s2: f2.score, total, score: scoreFor(f1?.score ?? 0, f2.score), mode })}
-              >
-                Ver meu resultado
-              </button>
-            </motion.div>
+            <FeedbackCard n={2} f={f2} />
+            <div ref={anchor} />
+            <VerdictReveal
+              p={persona}
+              s1={f1.score}
+              s2={f2.score}
+              mode={mode}
+              onNext={() => {
+                const total = f1.score + f2.score;
+                onDone({ persona, verdict: verdictFor(total, persona.dc), s1: f1.score, s2: f2.score, total, score: scoreFor(f1.score, f2.score, persona.difficulty), mode });
+              }}
+            />
           </>
         )}
-        <div ref={bottom} />
       </div>
 
       <AnimatePresence>{(phase === "judging1" || phase === "judging2") && <Judging />}</AnimatePresence>

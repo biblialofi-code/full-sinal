@@ -2,7 +2,8 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import QRCode from "qrcode";
-import { CAREERS, VERDICT_BARS, VERDICT_LABEL, MAX_BARS, pingoVerdictLine, rankFor } from "@/lib/content";
+import { CAREERS, CLOCK, EPILOGUE, VERDICT_BARS, VERDICT_LABEL, MAX_BARS, rankFor } from "@/lib/content";
+import { Clock } from "./Prologue";
 import { personasOf, type Persona } from "@/lib/personas";
 import type { Career } from "@/lib/content";
 import { Signal, Professor, Pingo } from "./Signal";
@@ -24,9 +25,10 @@ export function Title({ onStart, totem }: { onStart: () => void; totem: boolean 
       <img src="/claro.svg" alt="Claro" className="clarologo" />
       <Pingo size={170} mood="happy" />
       <div className="wordmark">Full Sinal</div>
-      <div className="tagtop">Um dia na ADDSALES, com a Claro na conexão</div>
-      <button className="cta g" style={{ maxWidth: 320, marginTop: 20 }} onClick={onStart}>Jogar agora</button>
-      <div className="tfoot">Leva cerca de 3 minutos · ADDSALES × Claro Internet</div>
+      <div className="tagtop">Seu primeiro dia na ADDSALES</div>
+      <div className="tline">A Claro Internet vai lançar uma campanha. O time precisa de alguém que saiba <b>convencer</b>.</div>
+      <button className="cta g" style={{ maxWidth: 320, marginTop: 20 }} onClick={onStart}>Começar meu dia</button>
+      <div className="tfoot">Cerca de 4 minutos · ADDSALES × Claro Internet</div>
       {totem && qr && (
         <div className="qrbox">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -45,9 +47,10 @@ export function CareerPick({ onPick, onBack }: { onPick: (c: Career) => void; on
         <button className="xbtn" onClick={onBack} aria-label="Voltar">✕</button>
         <div style={{ flex: 1 }} />
       </div>
+      <div className="pad"><Clock time={CLOCK.career} /></div>
       <div className="profrow">
         <Professor />
-        <div className="bubble">Qual carreira você quer testar hoje? Escolha a que mais combina com você. Aqui ninguém avalia currículo.</div>
+        <div className="bubble">Cada mesa da ADDSALES cuida de uma parte da campanha. Em qual você senta hoje?</div>
       </div>
       <div className="careers">
         {CAREERS.map((c) => (
@@ -69,6 +72,7 @@ export function CasePick({ career, onPick, onBack }: { career: Career; onPick: (
         <button className="xbtn" onClick={onBack} aria-label="Voltar">✕</button>
         <div style={{ flex: 1 }} />
       </div>
+      <div className="pad"><Clock time={CLOCK.cases} /></div>
       <div className="profrow">
         <Professor mood="happy" />
         <div className="bubble">{career.intro}</div>
@@ -125,7 +129,8 @@ export function Result({
   return (
     <div className="screen" style={{ position: "relative", overflow: "hidden" }}>
       <div className="summary" style={{ paddingBottom: 6 }}>
-        <div className="eyebrow">{career.emoji} {career.name}</div>
+        <div><Clock time={CLOCK.end} /></div>
+        <div className="eyebrow" style={{ marginTop: 10 }}>{career.emoji} {career.name}</div>
         <div className="speedometer">
           <div className="mbps">{shown}</div>
           <div className="mbpsl">Mbps de talento</div>
@@ -136,20 +141,21 @@ export function Result({
       <motion.div className="rankcard" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
         <div className="re">{rank.emoji}</div>
         <div className="rn">{rank.name}</div>
-        <div className="sub">{VERDICT_LABEL[r.verdict]} · {r.persona.name} · {r.total} de {r.persona.dc}</div>
+        <div className="sub">{VERDICT_LABEL[r.verdict]} · {r.persona.name} · {r.total}/20 (precisava de {r.persona.dc})</div>
       </motion.div>
 
       <div className="profrow" style={{ marginTop: 14 }}>
         <Professor size={58} mood={r.verdict === "saved" ? "happy" : r.verdict === "damned" ? "sad" : "idle"} />
-        <div className="bubble">{pingoVerdictLine(r.verdict)} <br />{rank.say}</div>
+        <div className="bubble">{EPILOGUE[r.verdict]} <br />{rank.say}</div>
       </div>
 
       <div className="casebox"><b>Sabia que?</b>{career.caseNote}</div>
+      <div className="standcta">Gostou de {career.name}? Fale com o time ADDSALES aqui no estande.</div>
 
       <div className="pad" style={{ marginTop: 18 }}>
         <button className="cta g" onClick={onLead}>Entrar no ranking</button>
         <button className="cta s" style={{ marginTop: 10 }} disabled={sharing} onClick={share}>{sharing ? "Gerando…" : "Baixar meu resultado"}</button>
-        <button className="cta k" style={{ marginTop: 10 }} onClick={onAgain}>Jogar outro caso</button>
+        <button className="cta k" style={{ marginTop: 10 }} onClick={onAgain}>Atender outro caso</button>
       </div>
     </div>
   );
