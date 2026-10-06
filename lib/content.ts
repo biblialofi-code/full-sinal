@@ -1,6 +1,6 @@
 // Conteúdo do jogo — só dados. Voz do Pingo: contida e direta, humor seco e curto.
 // Sem diminutivos, sem "hehe". Nunca explicar a piada.
-// TODO(marketing): validar os "Sabia que?" com a equipe ADDSALES e trocar por cases reais Claro.
+// TODO(Claro): validar textos de "Sabia que?" e "Na Claro" antes da feira (sem números ou fatos não confirmados).
 import type { CareerId } from "./personas";
 export type { CareerId } from "./personas";
 
@@ -9,51 +9,68 @@ export type Career = {
   name: string;
   emoji: string;
   pitch: string;
-  color: "green" | "sky" | "grape" | "sun";
-  intro: string; // fala do Pingo ao escolher a carreira
-  caseNote: string; // "Sabia que?" na tela final (ponte pro comercial)
+  color: "green" | "sky" | "grape" | "sun" | "rose";
+  intro: string; // fala do Pingo ao escolher a área
+  profile: string; // "seu perfil tech" na tela final
+  fiap: string[]; // cursos da FIAP ligados à área
+  caseNote: string; // "Sabia que?" na tela final
 };
 
 export const CAREERS: Career[] = [
   {
-    id: "dados",
-    name: "Dados & BI",
-    emoji: "📊",
-    pitch: "Transforma número em decisão",
+    id: "rede",
+    name: "Rede & 5G",
+    emoji: "📡",
+    pitch: "Mantém todo mundo conectado",
     color: "sky",
-    intro: "Em dados, o desafio é convencer alguém com o que o número realmente diz. Escolha o caso.",
-    caseNote:
-      "Dado bom evita decisão no achismo: em campanhas de performance, olhar o custo por resultado de cada público costuma render mais do que olhar só o total.",
+    intro: "Na rede, cada milissegundo conta e cada antena tem uma história. Escolha o caso.",
+    profile: "Você pensa em escala: quando milhares de pessoas se conectam ao mesmo tempo, é você quem enxerga o caminho do sinal.",
+    fiap: ["Engenharia de Computação", "Engenharia Mecatrônica", "Ciência da Computação"],
+    caseNote: "Por trás de cada vídeo que carrega existe uma rede de antenas, cabos de fibra e centros de dados trabalhando em tempo real.",
   },
   {
-    id: "midia",
-    name: "Mídia & Performance",
-    emoji: "🎯",
-    pitch: "Coloca o anúncio na frente de quem importa",
-    color: "green",
-    intro: "Em mídia, cada real precisa se justificar. Escolha quem você vai convencer.",
-    caseNote:
-      "Mídia boa não é gastar mais, é gastar melhor: segmentar por intenção e por público costuma reduzir o custo por lead sem perder qualidade.",
-  },
-  {
-    id: "dev",
-    name: "Dev & Produto",
-    emoji: "💻",
-    pitch: "Faz a coisa funcionar de verdade",
+    id: "ia",
+    name: "Dados & IA",
+    emoji: "🤖",
+    pitch: "Ensina a máquina a ajudar gente",
     color: "grape",
-    intro: "Em tecnologia, quase toda decisão vira uma conversa com quem não escreve código. Escolha o caso.",
-    caseNote:
-      "Velocidade vende: página que carrega rápido perde menos gente no caminho. Por isso conexão boa e código leve andam juntos.",
+    intro: "Em IA, a tecnologia só vale se a pessoa do outro lado sair melhor. Escolha quem você vai convencer.",
+    profile: "Você transforma dado em decisão e lembra que, do outro lado do algoritmo, sempre tem uma pessoa.",
+    fiap: ["Inteligência Artificial", "Agentes Inteligentes", "Gestão de IA", "Banco de Dados"],
+    caseNote: "Em uma operadora, dados e IA ajudam a prever problemas na rede e a atender melhor, desde que alguém pergunte se o resultado é justo.",
   },
   {
-    id: "criacao",
-    name: "Criação & Conteúdo",
+    id: "cyber",
+    name: "Cibersegurança",
+    emoji: "🛡️",
+    pitch: "Protege o que ninguém vê",
+    color: "rose",
+    intro: "Em segurança, o melhor dia é aquele em que nada acontece. Escolha o caso.",
+    profile: "Você desconfia do óbvio e protege o que ninguém vê. Quando tudo funciona, ninguém sabe que foi você.",
+    fiap: ["Segurança Cibernética", "Sistemas de Informação"],
+    caseNote: "Segurança não é só tecnologia: boa parte dos ataques começa com uma mensagem convincente e um clique apressado.",
+  },
+  {
+    id: "produto",
+    name: "Produto Digital",
+    emoji: "📱",
+    pitch: "Faz o app que cabe no bolso",
+    color: "green",
+    intro: "Em produto, cada botão é uma decisão. Escolha quem você vai convencer.",
+    profile: "Você constrói o que as pessoas usam todo dia e sabe que simples é a coisa mais difícil de fazer.",
+    fiap: ["Engenharia de Software", "Análise e Desenvolvimento de Sistemas", "Sistemas para Internet", "Jogos Digitais"],
+    caseNote: "Um app de operadora resolve em segundos o que antes exigia uma ligação: fatura, suporte, contratação. Quando funciona bem, ninguém percebe.",
+  },
+  {
+    id: "marca",
+    name: "Marketing & Criação",
     emoji: "🎨",
     pitch: "Faz a ideia parar o scroll",
     color: "sun",
     intro: "Em criação, a ideia só existe se alguém a aprovar. Escolha quem você vai convencer.",
-    caseNote:
-      "Criativo bom e dado bom andam juntos: testar variações de mensagem mostra qual ideia realmente fala com o público.",
+    profile: "Você traduz tecnologia em algo que as pessoas sentem. Internet é invisível; a sua ideia não.",
+    fiap: ["Marketing", "Design Gráfico", "Administração"],
+    caseNote: "Vender conexão é vender o que ela permite: a chamada com a família, a aula ao vivo, a partida sem lag.",
   },
 ];
 
@@ -125,12 +142,12 @@ export const REACT_MID = ["Dá para melhorar.", "Chegou perto.", "Sinal osciland
 export const REACT_LOW = ["Não foi dessa vez.", "Sinal fraco.", "Faz parte."];
 
 // ---------------- Narrativa ----------------
-// Prólogo: o primeiro dia na ADDSALES. Cada fala é uma tela (toque para avançar).
+// Prólogo: um dia no time de tecnologia da Claro. Cada fala é uma tela (toque para avançar).
 export const PROLOGUE = [
-  { clock: "09:00", mood: "happy" as const, text: "Segunda-feira, 9h. Bem-vindo à ADDSALES. Eu sou o Pingo e cuido do sinal por aqui." },
-  { clock: "09:02", mood: "wow" as const, text: "A Claro Internet vai lançar uma campanha nova, e o time está no limite. Precisamos de reforço." },
-  { clock: "09:05", mood: "idle" as const, text: "Seu trabalho hoje: convencer quem precisa ser convencido. Cliente, diretora, colega. Com argumento, não com volume de voz." },
-  { clock: "09:06", mood: "happy" as const, text: "Eu avalio cada argumento de 0 a 10. Duas chances por caso. Escolha sua mesa." },
+  { clock: "09:00", mood: "happy" as const, text: "Bom dia! Bem-vindo ao time de tecnologia da Claro. Eu sou o Pingo e cuido do sinal por aqui." },
+  { clock: "09:02", mood: "wow" as const, text: "Por trás de cada vídeo, chamada e partida online tem rede, dados, segurança e muito código. Hoje você faz parte disso." },
+  { clock: "09:05", mood: "idle" as const, text: "Seu trabalho: convencer quem precisa ser convencido. Cliente, colega, diretoria. Com argumento, não com volume de voz." },
+  { clock: "09:06", mood: "happy" as const, text: "Eu avalio cada argumento de 0 a 10. Duas chances por caso. Escolha sua área." },
 ];
 
 // Relógio da história em cada etapa
@@ -148,7 +165,7 @@ export const STARTERS_1 = ["O número mostra que", "Eu começaria por", "Na prá
 export const STARTERS_2 = ["Entendo a objeção, mas", "Um exemplo concreto:", "Para provar, eu mediria", "Se der errado, o plano B é"];
 
 export const EPILOGUE: Record<Verdict, string> = {
-  saved: "Fim do expediente. Caso resolvido, cliente satisfeito. Na ADDSALES, isso é um dia comum.",
+  saved: "Fim do expediente. Caso resolvido, cliente satisfeito. No time de tecnologia da Claro, isso é um dia comum.",
   resist: "Fim do expediente. O caso ficou em aberto, mas a conversa avançou. Amanhã tem mais.",
   damned: "Fim do expediente. Nem todo dia fecha bem. O que importa é voltar amanhã com um argumento melhor.",
 };

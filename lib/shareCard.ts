@@ -59,7 +59,7 @@ export async function makeCard(d: CardData): Promise<Blob> {
   ctx.fillText("Full Sinal", 260, 128);
   ctx.font = "600 34px Nunito, system-ui, sans-serif";
   ctx.globalAlpha = 0.85;
-  ctx.fillText("ADDSALES × Claro Internet", 262, 184);
+  ctx.fillText("Meu perfil tech · FIAP NEXT", 262, 184);
   ctx.globalAlpha = 1;
 
   // cartão branco
@@ -112,7 +112,7 @@ export async function shareOrDownload(d: CardData) {
   const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean };
   if (nav.canShare?.({ files: [file] })) {
     try {
-      await nav.share({ files: [file], text: "Joguei o Full Sinal da ADDSALES × Claro!" });
+      await nav.share({ files: [file], text: "Descobri meu perfil tech no Full Sinal da Claro, na FIAP NEXT!" });
       return;
     } catch {
       /* usuário cancelou: cai no download */

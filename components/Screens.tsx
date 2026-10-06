@@ -25,10 +25,11 @@ export function Title({ onStart, totem }: { onStart: () => void; totem: boolean 
       <img src="/claro.svg" alt="Claro" className="clarologo" />
       <Pingo size={170} mood="happy" />
       <div className="wordmark">Full Sinal</div>
-      <div className="tagtop">Seu primeiro dia na ADDSALES</div>
-      <div className="tline">A Claro Internet vai lançar uma campanha. O time precisa de alguém que saiba <b>convencer</b>.</div>
+      <div className="tagtop">Um dia no time de tecnologia da Claro</div>
+      <div className="tline">Escolha uma área, resolva um caso real e descubra o seu <b>perfil tech</b>.</div>
       <button className="cta g" style={{ maxWidth: 320, marginTop: 20 }} onClick={onStart}>Começar meu dia</button>
-      <div className="tfoot">Cerca de 4 minutos · ADDSALES × Claro Internet</div>
+      <div className="tfoot">Cerca de 4 minutos · FIAP NEXT</div>
+      <div className="sign">Uma experiência ADDSALES</div>
       {totem && qr && (
         <div className="qrbox">
           {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -50,7 +51,7 @@ export function CareerPick({ onPick, onBack }: { onPick: (c: Career) => void; on
       <div className="pad"><Clock time={CLOCK.career} /></div>
       <div className="profrow">
         <Professor />
-        <div className="bubble">Cada mesa da ADDSALES cuida de uma parte da campanha. Em qual você senta hoje?</div>
+        <div className="bubble">A tecnologia da Claro tem várias frentes. Em qual você quer trabalhar hoje?</div>
       </div>
       <div className="careers">
         {CAREERS.map((c) => (
@@ -149,12 +150,19 @@ export function Result({
         <div className="bubble">{EPILOGUE[r.verdict]} <br />{rank.say}</div>
       </div>
 
+      <motion.div className="profile" initial={{ y: 16, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.8 }}>
+        <div className="pk">Seu perfil tech</div>
+        <div className="pt">{career.emoji} {career.name}</div>
+        <p>{career.profile}</p>
+        <div className="pk" style={{ marginTop: 10 }}>Na FIAP, isso é</div>
+        <div className="chips">{career.fiap.map((c) => <span key={c}>{c}</span>)}</div>
+      </motion.div>
       <div className="casebox"><b>Sabia que?</b>{career.caseNote}</div>
-      <div className="standcta">Gostou de {career.name}? Fale com o time ADDSALES aqui no estande.</div>
+      <div className="standcta">Gostou? Mostre seu perfil para o time da Claro aqui no estande.</div>
 
       <div className="pad" style={{ marginTop: 18 }}>
-        <button className="cta g" onClick={onLead}>Entrar no ranking</button>
-        <button className="cta s" style={{ marginTop: 10 }} disabled={sharing} onClick={share}>{sharing ? "Gerando…" : "Baixar meu resultado"}</button>
+        <button className="cta g" disabled={sharing} onClick={share}>{sharing ? "Gerando…" : "Compartilhar meu perfil"}</button>
+        <button className="cta s" style={{ marginTop: 10 }} onClick={onLead}>Entrar no ranking do dia</button>
         <button className="cta k" style={{ marginTop: 10 }} onClick={onAgain}>Atender outro caso</button>
       </div>
     </div>
@@ -236,7 +244,7 @@ export function LeadForm({
         {/* TODO(jurídico): substituir pelo texto LGPD aprovado e linkar a política de privacidade */}
         <label className="consent">
           <input type="checkbox" checked={f.consent} onChange={(e) => set("consent", e.target.checked)} />
-          <span>Aceito que a ADDSALES use meus dados para contato sobre oportunidades e novidades, e para o ranking desta ativação.</span>
+          <span>Aceito que meus dados sejam usados para o ranking desta ativação e para receber novidades da Claro.</span>
         </label>
         {err && <div className="formerr">{err}</div>}
         <button className="cta g" disabled={busy} style={busy ? { opacity: 0.6 } : undefined}>

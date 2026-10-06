@@ -54,7 +54,7 @@ export function Prologue({ onDone }: { onDone: () => void }) {
           {PROLOGUE.map((_, k) => <i key={k} className={k <= i ? "on" : ""} />)}
         </div>
         <button className="cta g" onClick={(e) => { e.stopPropagation(); tap(); }}>
-          {!tw.done ? "Continuar" : last ? "Escolher minha mesa" : "Continuar"}
+          {!tw.done ? "Continuar" : last ? "Escolher minha área" : "Continuar"}
         </button>
       </div>
     </div>
