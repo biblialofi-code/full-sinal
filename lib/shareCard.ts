@@ -1,7 +1,7 @@
 "use client";
 // Gera o cartão de resultado (PNG 1080x1350, formato feed do Instagram) no navegador.
 
-type CardData = { career: string; careerEmoji: string; rank: string; rankEmoji: string; score: number; correct: number; total: number };
+type CardData = { career: string; careerEmoji: string; rank: string; rankEmoji: string; score: number; verdict: string; total: number; dc: number };
 
 function loadImg(src: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
@@ -94,7 +94,7 @@ export async function makeCard(d: CardData): Promise<Blob> {
 
   ctx.fillStyle = "#3b2a29";
   ctx.font = "600 58px Fredoka, system-ui, sans-serif";
-  ctx.fillText(`${d.rankEmoji}  ${d.rank}  ·  ${d.correct}/${d.total}`, W / 2, 1085);
+  ctx.fillText(`${d.rankEmoji}  ${d.rank}  ·  ${d.verdict}`, W / 2, 1085);
 
   ctx.fillStyle = "#fff";
   ctx.font = "800 40px Nunito, system-ui, sans-serif";

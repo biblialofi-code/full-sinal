@@ -2,11 +2,12 @@
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import QRCode from "qrcode";
-import { CAREERS, MAX_BARS, professorLine, rankFor } from "@/lib/content";
+import { CAREERS, VERDICT_BARS, VERDICT_LABEL, MAX_BARS, pingoVerdictLine, rankFor } from "@/lib/content";
+import { personasOf, type Persona } from "@/lib/personas";
 import type { Career } from "@/lib/content";
 import { Signal, Professor, Pingo } from "./Signal";
 import { shareOrDownload } from "@/lib/shareCard";
-import type { RunResult } from "./Run";
+import type { DuelResult } from "./Duel";
 
 export function Title({ onStart, totem }: { onStart: () => void; totem: boolean }) {
   const [qr, setQr] = useState<string | null>(null);
@@ -61,6 +62,34 @@ export function CareerPick({ onPick, onBack }: { onPick: (c: Career) => void; on
   );
 }
 
+export function CasePick({ career, onPick, onBack }: { career: Career; onPick: (p: Persona) => void; onBack: () => void }) {
+  return (
+    <div className="screen">
+      <div className="progresswrap">
+        <button className="xbtn" onClick={onBack} aria-label="Voltar">✕</button>
+        <div style={{ flex: 1 }} />
+      </div>
+      <div className="profrow">
+        <Professor mood="happy" />
+        <div className="bubble">{career.intro}</div>
+      </div>
+      <div className="cases">
+        {personasOf(career.id).map((p) => (
+          <button key={p.id} className="casecard" onClick={() => onPick(p)}>
+            <span className="pavatar" style={{ background: p.color }}>{p.emoji}</span>
+            <span className="cbody">
+              <span className="cname">{p.name}</span>
+              <span className="carch">{p.archetype}</span>
+              <span className="ctag">{p.tagline}</span>
+            </span>
+            <span className={"cdiff d-" + p.difficulty.replace("Á", "A").replace("É", "E").replace("Í", "I")}>{p.difficulty}<b>DC {p.dc}</b></span>
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function Result({
   career,
   r,
@@ -68,7 +97,7 @@ export function Result({
   onAgain,
 }: {
   career: Career;
-  r: RunResult;
+  r: DuelResult;
   onLead: () => void;
   onAgain: () => void;
 }) {
@@ -78,7 +107,7 @@ export function Result({
   async function share() {
     setSharing(true);
     try {
-      await shareOrDownload({ career: career.name, careerEmoji: career.emoji, rank: rank.name, rankEmoji: rank.emoji, score: r.score, correct: r.correct, total: r.total });
+      await shareOrDownload({ career: career.name, careerEmoji: career.emoji, rank: rank.name, rankEmoji: rank.emoji, score: r.score, verdict: VERDICT_LABEL[r.verdict], total: r.total, dc: r.persona.dc });
     } finally {
       setSharing(false);
     }
@@ -100,19 +129,19 @@ export function Result({
         <div className="speedometer">
           <div className="mbps">{shown}</div>
           <div className="mbpsl">Mbps de talento</div>
-          <div style={{ marginTop: 8 }}><Signal bars={r.bars} max={MAX_BARS} /></div>
+          <div style={{ marginTop: 8 }}><Signal bars={VERDICT_BARS[r.verdict]} max={MAX_BARS} /></div>
         </div>
       </div>
 
       <motion.div className="rankcard" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
         <div className="re">{rank.emoji}</div>
         <div className="rn">{rank.name}</div>
-        <div className="sub">{r.correct} de {r.total} desafios</div>
+        <div className="sub">{VERDICT_LABEL[r.verdict]} · {r.persona.name} · {r.total} de {r.persona.dc}</div>
       </motion.div>
 
       <div className="profrow" style={{ marginTop: 14 }}>
-        <Professor size={58} mood={r.correct >= Math.ceil(r.total / 2) ? "happy" : "sad"} />
-        <div className="bubble">{professorLine(r.correct, r.total, r.bars)} <br />{rank.say}</div>
+        <Professor size={58} mood={r.verdict === "saved" ? "happy" : r.verdict === "damned" ? "sad" : "idle"} />
+        <div className="bubble">{pingoVerdictLine(r.verdict)} <br />{rank.say}</div>
       </div>
 
       <div className="casebox"><b>Sabia que?</b>{career.caseNote}</div>
@@ -120,7 +149,7 @@ export function Result({
       <div className="pad" style={{ marginTop: 18 }}>
         <button className="cta g" onClick={onLead}>Entrar no ranking</button>
         <button className="cta s" style={{ marginTop: 10 }} disabled={sharing} onClick={share}>{sharing ? "Gerando…" : "Baixar meu resultado"}</button>
-        <button className="cta k" style={{ marginTop: 10 }} onClick={onAgain}>Jogar outra carreira</button>
+        <button className="cta k" style={{ marginTop: 10 }} onClick={onAgain}>Jogar outro caso</button>
       </div>
     </div>
   );
@@ -134,7 +163,7 @@ export function LeadForm({
   onDone,
   onSkip,
 }: {
-  r: RunResult;
+  r: DuelResult;
   career: Career;
   onDone: (position: number | null) => void;
   onSkip: () => void;

@@ -1,17 +1,19 @@
 "use client";
 import { useEffect, useState } from "react";
 import type { Career } from "@/lib/content";
-import { Run, type RunResult } from "@/components/Run";
-import { Title, CareerPick, Result, LeadForm, Ranking } from "@/components/Screens";
+import type { Persona } from "@/lib/personas";
+import { Duel, type DuelResult } from "@/components/Duel";
+import { Title, CareerPick, CasePick, Result, LeadForm, Ranking } from "@/components/Screens";
 
-type Screen = "title" | "career" | "run" | "result" | "lead" | "ranking";
+type Screen = "title" | "career" | "cases" | "duel" | "result" | "lead" | "ranking";
 
 const IDLE_MS = 60_000; // modo totem: volta ao início sem toque por 1 minuto
 
 export default function Game() {
   const [screen, setScreen] = useState<Screen>("title");
   const [career, setCareer] = useState<Career | null>(null);
-  const [result, setResult] = useState<RunResult | null>(null);
+  const [persona, setPersona] = useState<Persona | null>(null);
+  const [result, setResult] = useState<DuelResult | null>(null);
   const [position, setPosition] = useState<number | null>(null);
   const [totem, setTotem] = useState(false);
 
@@ -24,6 +26,7 @@ export default function Game() {
     if (!totem || screen === "title") return;
     const home = () => {
       setCareer(null);
+      setPersona(null);
       setResult(null);
       setPosition(null);
       setScreen("title");
@@ -44,6 +47,7 @@ export default function Game() {
 
   function goHome() {
     setCareer(null);
+    setPersona(null);
     setResult(null);
     setPosition(null);
     setScreen("title");
@@ -55,16 +59,29 @@ export default function Game() {
         onBack={goHome}
         onPick={(c) => {
           setCareer(c);
-          setScreen("run");
+          setScreen("cases");
         }}
       />
     );
   }
-  if (screen === "run" && career) {
+  if (screen === "cases" && career) {
     return (
-      <Run
+      <CasePick
         career={career}
-        onExit={() => setScreen("career")}
+        onBack={() => setScreen("career")}
+        onPick={(p) => {
+          setPersona(p);
+          setScreen("duel");
+        }}
+      />
+    );
+  }
+  if (screen === "duel" && persona) {
+    return (
+      <Duel
+        key={persona.id}
+        persona={persona}
+        onExit={() => setScreen("cases")}
         onDone={(r) => {
           setResult(r);
           setScreen("result");
@@ -73,7 +90,7 @@ export default function Game() {
     );
   }
   if (screen === "result" && career && result) {
-    return <Result career={career} r={result} onLead={() => setScreen("lead")} onAgain={() => setScreen("career")} />;
+    return <Result career={career} r={result} onLead={() => setScreen("lead")} onAgain={() => setScreen("cases")} />;
   }
   if (screen === "lead" && career && result) {
     return (
@@ -89,7 +106,7 @@ export default function Game() {
     );
   }
   if (screen === "ranking" && result) {
-    return <Ranking position={position} myScore={result.score} onAgain={totem ? goHome : () => setScreen("career")} />;
+    return <Ranking position={position} myScore={result.score} onAgain={totem ? goHome : () => setScreen("cases")} />;
   }
   return <Title totem={totem} onStart={() => setScreen("career")} />;
 }
