@@ -44,6 +44,7 @@ async function main() {
 
   const ids = Object.keys(VOICE_LINES).filter((id) => !only || only.has(id));
   let done = 0;
+  let failed = 0;
   for (const id of ids) {
     const text = VOICE_LINES[id];
     // o hash inclui voz e modelo: trocar a voz refaz tudo
@@ -62,6 +63,8 @@ async function main() {
     });
     if (!r.ok) {
       console.error(`✗ ${id}: ${r.status} ${(await r.text()).slice(0, 200)}`);
+      failed++;
+      if (r.status === 401) break; // chave sem permissão: não adianta tentar as outras
       continue;
     }
     writeFileSync(file, Buffer.from(await r.arrayBuffer()));
@@ -70,7 +73,7 @@ async function main() {
     done++;
     console.log(`✓ ${id}`);
   }
-  console.log(`Pronto: ${done} gerada(s), ${ids.length - done} já estava(m) em dia.`);
+  console.log(`Pronto: ${done} gerada(s), ${failed} com erro, ${ids.length - done - failed} já estava(m) em dia.`);
 }
 
 main();
