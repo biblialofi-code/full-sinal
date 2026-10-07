@@ -6,7 +6,7 @@ const fredoka = Fredoka({ variable: "--font-fredoka", subsets: ["latin"], weight
 const nunito = Nunito({ variable: "--font-nunito", subsets: ["latin"], weight: ["600", "700", "800", "900"] });
 
 export const metadata: Metadata = {
-  title: "Full Sinal — Claro · FIAP NEXT",
+  title: "O Futuro é Claro — Claro · FIAP NEXT",
   description: "Escolha uma carreira, resolva os desafios sem perder o sinal e descubra sua patente.",
 };
 

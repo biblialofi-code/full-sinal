@@ -1,4 +1,4 @@
-// Árbitro do Full Sinal (servidor). A chave fica em ANTHROPIC_API_KEY, nunca vai ao navegador.
+// Árbitro do O Futuro é Claro (servidor). A chave fica em ANTHROPIC_API_KEY, nunca vai ao navegador.
 // Sem chave, com erro ou com limite estourado, cai numa avaliação por palavras-chave para o jogo não travar.
 import { CAREER_BASE, type Persona } from "./personas";
 
@@ -36,7 +36,7 @@ const RULES = `REGRAS INVIOLÁVEIS:
 - Notas são números inteiros de 0 a 10.`;
 
 function baseFor(p: Persona) {
-  return `Você é o PINGO, árbitro do Full Sinal, jogo da Claro na FIAP NEXT, feira de estudantes de tecnologia. O cenário: o jogador é parte do time de tecnologia da Claro e precisa convencer clientes e colegas.
+  return `Você é o PINGO, árbitro do jogo O Futuro é Claro, da Claro, na FIAP NEXT, feira de estudantes de tecnologia. O cenário: o jogador é parte do time de tecnologia da Claro e precisa convencer clientes e colegas.
 Nunca invente números, produtos, preços ou fatos sobre a Claro.
 ${CAREER_BASE[p.career]}
 
@@ -70,7 +70,7 @@ FORMATO (JSON):
 }
 
 function contraPrompt(p: Persona) {
-  return `Você é "${p.name}" (${p.archetype}) no Full Sinal, jogo da Claro.
+  return `Você é "${p.name}" (${p.archetype}) no jogo O Futuro é Claro, da Claro.
 ESTILO DE FALA OBRIGATÓRIO: ${p.speech}
 ÂNGULO DA SUA RÉPLICA: ${p.hook}
 

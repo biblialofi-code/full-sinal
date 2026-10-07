@@ -25,7 +25,7 @@ export function Title({ onStart, totem }: { onStart: () => void; totem: boolean 
       {/* eslint-disable-next-line @next/next/no-img-element */}
       <img src="/claro.svg" alt="Claro" className="clarologo" />
       <Pingo size={170} mood="happy" />
-      <div className="wordmark">Full Sinal</div>
+      <div className="wordmark">O Futuro<br />é Claro</div>
       <div className="tagtop">Um dia no time de tecnologia da Claro</div>
       <div className="tline">Escolha uma área, resolva um caso real e descubra o seu <b>perfil tech</b>.</div>
       <button className="cta g" style={{ maxWidth: 320, marginTop: 20 }} onClick={onStart}>Começar meu dia</button>

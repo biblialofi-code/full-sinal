@@ -1,4 +1,4 @@
-// Personas do Full Sinal: clientes e colegas fictícios do time de tecnologia da Claro.
+// Personas do O Futuro é Claro: clientes e colegas fictícios do time de tecnologia da Claro.
 // Dados puros, usados no navegador e no servidor (/api/judge). Adicionar persona = adicionar objeto.
 // Situações inspiradas no dia a dia de uma operadora; nenhum número ou fato sobre a Claro é afirmado.
 // TODO(Claro): validar cenários e tom antes da feira.

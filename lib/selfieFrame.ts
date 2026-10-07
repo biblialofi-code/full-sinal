@@ -62,8 +62,8 @@ export async function composeSelfie(src: CanvasImageSource, sw: number, sh: numb
   if (logo) ctx.drawImage(logo, 60, 58, 140, 140);
   ctx.fillStyle = "#fff";
   ctx.textAlign = "left";
-  ctx.font = `700 84px ${FRED()}`;
-  ctx.fillText("Full Sinal", 226, 140);
+  ctx.font = `700 72px ${FRED()}`;
+  ctx.fillText("O Futuro é Claro", 226, 138);
   ctx.font = `800 34px ${NUN()}`;
   ctx.globalAlpha = 0.85;
   ctx.fillText("Claro · FIAP NEXT", 230, 192);
@@ -135,7 +135,7 @@ export async function composeSelfie(src: CanvasImageSource, sw: number, sh: numb
   ctx.textAlign = "center";
   ctx.fillStyle = "#fff";
   ctx.font = `800 50px ${NUN()}`;
-  ctx.fillText("#FullSinal", W / 2, 1815);
+  ctx.fillText("#OFuturoÉClaro", W / 2, 1815);
   ctx.globalAlpha = 0.7;
   ctx.font = `800 24px ${NUN()}`;
   ctx.fillText("UMA EXPERIÊNCIA ADDSALES", W / 2, 1868);

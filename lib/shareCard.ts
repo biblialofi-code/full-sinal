@@ -63,8 +63,8 @@ export async function makeCard(d: CardData): Promise<Blob> {
 
   ctx.fillStyle = "#fff";
   ctx.textAlign = "left";
-  ctx.font = `700 74px ${FRED()}`;
-  ctx.fillText("Full Sinal", 260, 128);
+  ctx.font = `700 66px ${FRED()}`;
+  ctx.fillText("O Futuro é Claro", 260, 126);
   ctx.font = `600 34px ${NUN()}`;
   ctx.globalAlpha = 0.85;
   ctx.fillText("Meu perfil tech · FIAP NEXT", 262, 184);
@@ -109,13 +109,13 @@ export async function makeCard(d: CardData): Promise<Blob> {
   ctx.fillText("Você aguenta o sinal? Jogue também.", W / 2, 1220);
   ctx.globalAlpha = 0.8;
   ctx.font = `700 32px ${NUN()}`;
-  ctx.fillText("#FullSinal", W / 2, 1275);
+  ctx.fillText("#OFuturoÉClaro", W / 2, 1275);
 
   return new Promise((resolve, reject) => c.toBlob((b) => (b ? resolve(b) : reject(new Error("falha ao gerar"))), "image/png"));
 }
 
 export async function shareOrDownload(d: CardData) {
-  await shareBlob(await makeCard(d), "full-sinal.png", "Descobri meu perfil tech no Full Sinal da Claro, na FIAP NEXT!");
+  await shareBlob(await makeCard(d), "o-futuro-e-claro.png", "Descobri meu perfil tech no jogo O Futuro é Claro, na FIAP NEXT!");
 }
 
 // No celular abre o menu de compartilhar (Instagram, WhatsApp…); senão, baixa o arquivo.

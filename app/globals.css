@@ -412,3 +412,4 @@ body{
 .selfie-out{width:100%;border-radius:20px;box-shadow:0 14px 30px rgba(0,0,0,.35)}
 .selfie-msg{background:#fff;border-radius:18px;padding:14px;font-weight:800;font-size:15px;line-height:1.4;color:var(--ink);text-align:center}
 .cta.ghostw{background:transparent;color:#fff;box-shadow:none;border:3px solid rgba(255,255,255,.7)}
+.wordmark{font-size:54px;line-height:.98;text-align:center}

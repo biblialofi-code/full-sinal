@@ -99,7 +99,7 @@ export function Selfie({ data, onClose }: { data: SelfieData; onClose: () => voi
 
   async function share() {
     if (!shot) return;
-    await shareBlob(shot.blob, "full-sinal-selfie.jpg", "Meu nível de conexão no Full Sinal da Claro, na FIAP NEXT! #FullSinal");
+    await shareBlob(shot.blob, "o-futuro-e-claro-selfie.jpg", "Meu nível de conexão no jogo O Futuro é Claro, na FIAP NEXT! #OFuturoÉClaro");
   }
 
   function retake() {
@@ -118,7 +118,7 @@ export function Selfie({ data, onClose }: { data: SelfieData; onClose: () => voi
       {stage === "preview" && shot ? (
         <div className="selfie-body">
           {/* eslint-disable-next-line @next/next/no-img-element */}
-          <img className="selfie-out" src={shot.url} alt="Sua selfie com a moldura do Full Sinal" />
+          <img className="selfie-out" src={shot.url} alt="Sua selfie com a moldura do O Futuro é Claro" />
           <button className="cta k" onClick={share}>Compartilhar nas redes</button>
           <button className="cta ghostw" onClick={retake}>Tirar outra</button>
         </div>
