@@ -22,6 +22,7 @@ import {
 import { playSfx } from "@/lib/sfx";
 import { Pingo, Professor } from "./Signal";
 import { Clock, useTypewriter } from "./Prologue";
+import { useSay } from "@/lib/voice";
 
 export type DuelResult = {
   persona: Persona;
@@ -52,6 +53,8 @@ async function post<T>(body: Record<string, unknown>): Promise<T & { source: "ai
 
 function Judging() {
   const [i, setI] = useState(0);
+  const [line] = useState(() => Math.floor(Math.random() * JUDGING_LINES.length));
+  useSay(`judging-${line}`);
   useEffect(() => {
     const id = setInterval(() => setI((x) => (x + 1) % JUDGING_LINES.length), 1800);
     return () => clearInterval(id);
@@ -206,6 +209,7 @@ function VerdictReveal({
   const total = s1 + s2;
   const v = verdictFor(total, p.dc);
   const [stage, setStage] = useState(0); // 0 enchendo, 1 veredito, 2 reação
+  useSay(stage >= 2 && `verdict-${v}`);
   useEffect(() => {
     const a = setTimeout(() => {
       setStage(1);

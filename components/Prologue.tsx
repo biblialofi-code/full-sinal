@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
 import { PROLOGUE } from "@/lib/content";
 import { playSfx } from "@/lib/sfx";
+import { useSay } from "@/lib/voice";
 import { Pingo } from "./Signal";
 
 // Texto que aparece letra a letra; um toque completa, outro avança.
@@ -25,6 +26,7 @@ export function Prologue({ onDone }: { onDone: () => void }) {
   const beat = PROLOGUE[i];
   const tw = useTypewriter(beat.text);
   const last = i === PROLOGUE.length - 1;
+  useSay(`prologue-${i}`);
 
   function tap() {
     if (!tw.done) return tw.finish();

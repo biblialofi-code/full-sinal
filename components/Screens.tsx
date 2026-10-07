@@ -9,6 +9,8 @@ import type { Career } from "@/lib/content";
 import { Signal, Professor, Pingo } from "./Signal";
 import { shareOrDownload } from "@/lib/shareCard";
 import { Selfie } from "./Selfie";
+import { useSay } from "@/lib/voice";
+import { PICK_AREA, rankVoiceId } from "@/lib/voiceLines";
 import type { DuelResult } from "./Duel";
 
 export function Title({ onStart, totem }: { onStart: () => void; totem: boolean }) {
@@ -43,6 +45,7 @@ export function Title({ onStart, totem }: { onStart: () => void; totem: boolean 
 }
 
 export function CareerPick({ onPick, onBack }: { onPick: (c: Career) => void; onBack: () => void }) {
+  useSay("pick-area");
   return (
     <div className="screen">
       <div className="progresswrap">
@@ -52,7 +55,7 @@ export function CareerPick({ onPick, onBack }: { onPick: (c: Career) => void; on
       <div className="pad"><Clock time={CLOCK.career} /></div>
       <div className="profrow">
         <Professor />
-        <div className="bubble">A tecnologia da Claro tem várias frentes. Em qual você quer trabalhar hoje?</div>
+        <div className="bubble">{PICK_AREA}</div>
       </div>
       <div className="careers">
         {CAREERS.map((c) => (
@@ -68,6 +71,7 @@ export function CareerPick({ onPick, onBack }: { onPick: (c: Career) => void; on
 }
 
 export function CasePick({ career, onPick, onBack }: { career: Career; onPick: (p: Persona) => void; onBack: () => void }) {
+  useSay(`intro-${career.id}`);
   return (
     <div className="screen">
       <div className="progresswrap">
@@ -108,6 +112,7 @@ export function Result({
   onAgain: () => void;
 }) {
   const rank = rankFor(r.score);
+  useSay(`epilogue-${r.verdict}`, rankVoiceId(rank.name));
   const [shown, setShown] = useState(0);
   const [sharing, setSharing] = useState(false);
   const [selfie, setSelfie] = useState(false);
