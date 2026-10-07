@@ -108,10 +108,16 @@ function PersonaSays({ p, text, tag, typed }: { p: Persona; text: string; tag?: 
 // Cronômetro do argumento: verde enquanto vale o bônus máximo, depois vai caindo.
 function Stopwatch({ startedAt, running }: { startedAt: number; running: boolean }) {
   const [now, setNow] = useState(() => Date.now());
+  // atualiza a cada quadro para os milissegundos correrem na tela
   useEffect(() => {
     if (!running) return;
-    const id = setInterval(() => setNow(Date.now()), 250);
-    return () => clearInterval(id);
+    let raf = 0;
+    const tick = () => {
+      setNow(Date.now());
+      raf = requestAnimationFrame(tick);
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
   }, [running]);
   const ms = Math.max(0, now - startedAt);
   const bonus = speedBonus(ms, 10);

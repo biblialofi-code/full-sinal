@@ -197,7 +197,11 @@ export function speedBonus(ms: number, note: number) {
   return Math.round(SPEED.max * (1 - (ms - SPEED.full) / (SPEED.zero - SPEED.full)));
 }
 
+// Formato de cronômetro: 0:23.417
 export function fmtTime(ms: number) {
-  const s = Math.max(0, Math.round(ms / 1000));
-  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+  const t = Math.max(0, Math.floor(ms));
+  const m = Math.floor(t / 60000);
+  const s = Math.floor((t % 60000) / 1000);
+  const mm = t % 1000;
+  return `${m}:${String(s).padStart(2, "0")}.${String(mm).padStart(3, "0")}`;
 }
