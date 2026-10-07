@@ -3,7 +3,15 @@
 
 type CardData = { career: string; careerEmoji: string; rank: string; rankEmoji: string; score: number; verdict: string; total: number; dc: number };
 
-function loadImg(src: string) {
+// Fontes do next/font têm nome gerado; lemos a família real das variáveis CSS.
+function fam(v: string, fb: string) {
+  const f = typeof document !== "undefined" ? getComputedStyle(document.documentElement).getPropertyValue(v).trim() : "";
+  return (f || fb) + ", system-ui, sans-serif";
+}
+export const FRED = () => fam("--font-fredoka", "Fredoka");
+export const NUN = () => fam("--font-nunito", "Nunito");
+
+export function loadImg(src: string) {
   return new Promise<HTMLImageElement>((resolve, reject) => {
     const img = new Image();
     img.onload = () => resolve(img);
@@ -12,7 +20,7 @@ function loadImg(src: string) {
   });
 }
 
-function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+export function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
   ctx.beginPath();
   ctx.moveTo(x + r, y);
   ctx.arcTo(x + w, y, x + w, y + h, r);
@@ -55,9 +63,9 @@ export async function makeCard(d: CardData): Promise<Blob> {
 
   ctx.fillStyle = "#fff";
   ctx.textAlign = "left";
-  ctx.font = "700 74px Fredoka, system-ui, sans-serif";
+  ctx.font = `700 74px ${FRED()}`;
   ctx.fillText("Full Sinal", 260, 128);
-  ctx.font = "600 34px Nunito, system-ui, sans-serif";
+  ctx.font = `600 34px ${NUN()}`;
   ctx.globalAlpha = 0.85;
   ctx.fillText("Meu perfil tech · FIAP NEXT", 262, 184);
   ctx.globalAlpha = 1;
@@ -82,37 +90,41 @@ export async function makeCard(d: CardData): Promise<Blob> {
 
   ctx.textAlign = "center";
   ctx.fillStyle = "#9a8b89";
-  ctx.font = "800 34px Nunito, system-ui, sans-serif";
+  ctx.font = `800 34px ${NUN()}`;
   ctx.fillText(`${d.careerEmoji}  ${d.career.toUpperCase()}`, W / 2, 780);
 
   ctx.fillStyle = "#da291c";
-  ctx.font = "700 210px Fredoka, system-ui, sans-serif";
+  ctx.font = `700 210px ${FRED()}`;
   ctx.fillText(String(d.score), W / 2, 960);
   ctx.fillStyle = "#9a8b89";
-  ctx.font = "800 34px Nunito, system-ui, sans-serif";
+  ctx.font = `800 34px ${NUN()}`;
   ctx.fillText("MBPS DE TALENTO", W / 2, 1015);
 
   ctx.fillStyle = "#3b2a29";
-  ctx.font = "600 58px Fredoka, system-ui, sans-serif";
+  ctx.font = `600 58px ${FRED()}`;
   ctx.fillText(`${d.rankEmoji}  ${d.rank}  ·  ${d.verdict}`, W / 2, 1085);
 
   ctx.fillStyle = "#fff";
-  ctx.font = "800 40px Nunito, system-ui, sans-serif";
+  ctx.font = `800 40px ${NUN()}`;
   ctx.fillText("Você aguenta o sinal? Jogue também.", W / 2, 1220);
   ctx.globalAlpha = 0.8;
-  ctx.font = "700 32px Nunito, system-ui, sans-serif";
+  ctx.font = `700 32px ${NUN()}`;
   ctx.fillText("#FullSinal", W / 2, 1275);
 
   return new Promise((resolve, reject) => c.toBlob((b) => (b ? resolve(b) : reject(new Error("falha ao gerar"))), "image/png"));
 }
 
 export async function shareOrDownload(d: CardData) {
-  const blob = await makeCard(d);
-  const file = new File([blob], "full-sinal.png", { type: "image/png" });
+  await shareBlob(await makeCard(d), "full-sinal.png", "Descobri meu perfil tech no Full Sinal da Claro, na FIAP NEXT!");
+}
+
+// No celular abre o menu de compartilhar (Instagram, WhatsApp…); senão, baixa o arquivo.
+export async function shareBlob(blob: Blob, name: string, text: string) {
+  const file = new File([blob], name, { type: blob.type || "image/png" });
   const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean };
   if (nav.canShare?.({ files: [file] })) {
     try {
-      await nav.share({ files: [file], text: "Descobri meu perfil tech no Full Sinal da Claro, na FIAP NEXT!" });
+      await nav.share({ files: [file], text });
       return;
     } catch {
       /* usuário cancelou: cai no download */
@@ -121,7 +133,7 @@ export async function shareOrDownload(d: CardData) {
   const url = URL.createObjectURL(blob);
   const a = document.createElement("a");
   a.href = url;
-  a.download = "full-sinal.png";
+  a.download = name;
   a.click();
   setTimeout(() => URL.revokeObjectURL(url), 2000);
 }

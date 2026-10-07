@@ -8,6 +8,7 @@ import { personasOf, type Persona } from "@/lib/personas";
 import type { Career } from "@/lib/content";
 import { Signal, Professor, Pingo } from "./Signal";
 import { shareOrDownload } from "@/lib/shareCard";
+import { Selfie } from "./Selfie";
 import type { DuelResult } from "./Duel";
 
 export function Title({ onStart, totem }: { onStart: () => void; totem: boolean }) {
@@ -109,6 +110,7 @@ export function Result({
   const rank = rankFor(r.score);
   const [shown, setShown] = useState(0);
   const [sharing, setSharing] = useState(false);
+  const [selfie, setSelfie] = useState(false);
   async function share() {
     setSharing(true);
     try {
@@ -162,8 +164,15 @@ export function Result({
       <div className="casebox"><b>Sabia que?</b>{career.caseNote}</div>
       <div className="standcta">Gostou? Mostre seu perfil para o time da Claro aqui no estande.</div>
 
+      {selfie && (
+        <Selfie
+          data={{ tier: rank.name, tierEmoji: rank.emoji, career: career.name, careerEmoji: career.emoji, score: r.score, verdict: VERDICT_LABEL[r.verdict] }}
+          onClose={() => setSelfie(false)}
+        />
+      )}
       <div className="pad" style={{ marginTop: 18 }}>
-        <button className="cta g" disabled={sharing} onClick={share}>{sharing ? "Gerando…" : "Compartilhar meu perfil"}</button>
+        <button className="cta g" onClick={() => setSelfie(true)}>📸 Selfie com meu resultado</button>
+        <button className="cta s" style={{ marginTop: 10 }} disabled={sharing} onClick={share}>{sharing ? "Gerando…" : "Compartilhar só o cartão"}</button>
         <button className="cta s" style={{ marginTop: 10 }} onClick={onLead}>Entrar no ranking do dia</button>
         <button className="cta k" style={{ marginTop: 10 }} onClick={onAgain}>Atender outro caso</button>
       </div>
