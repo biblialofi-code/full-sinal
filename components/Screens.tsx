@@ -140,9 +140,11 @@ export function Result({
       </div>
 
       <motion.div className="rankcard" initial={{ y: 20, opacity: 0 }} animate={{ y: 0, opacity: 1 }} transition={{ delay: 0.5 }}>
+        <div className="rk-kicker">Qualidade da sua conexão</div>
         <div className="re">{rank.emoji}</div>
         <div className="rn">{rank.name}</div>
         <div className="sub">{VERDICT_LABEL[r.verdict]} · {r.persona.name} · {r.total}/20 (precisava de {r.persona.dc})</div>
+        {r.speed.b1 + r.speed.b2 > 0 && <div className="speedtag">⚡ +{r.speed.b1 + r.speed.b2} de velocidade</div>}
       </motion.div>
 
       <div className="profrow" style={{ marginTop: 14 }}>

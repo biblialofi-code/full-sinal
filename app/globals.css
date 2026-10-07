@@ -370,3 +370,21 @@ body{
 .profile p{margin:6px 0 0;font-weight:700;font-size:14.5px;line-height:1.45;color:var(--ink)}
 .chips{display:flex;flex-wrap:wrap;gap:6px;margin-top:6px}
 .chips span{background:var(--brand-tint);border:2px solid #f6cfcb;border-radius:999px;padding:5px 11px;font-weight:800;font-size:12.5px;color:var(--brand-d)}
+
+/* ================= VELOCIDADE ================= */
+.stopwatch{display:flex;align-items:center;justify-content:space-between;gap:8px;border-radius:12px;padding:7px 12px;margin-bottom:8px;font-weight:900;font-size:13px;transition:background .3s,color .3s}
+.stopwatch span{font-family:var(--font-fredoka);font-weight:600;font-size:18px}
+.stopwatch em{font-style:normal;font-size:12px}
+.stopwatch.fast{background:#e3f7ec;color:var(--ok-d)}
+.stopwatch.mid{background:#fff3df;color:#b8741a}
+.stopwatch.slow{background:#f3e9e8;color:var(--muted)}
+.bcrit-s{margin-top:8px;padding-top:8px;border-top:2px solid var(--line);font-weight:800;font-size:13px;line-height:1.4;color:var(--ink)}
+.bcrit-s b{color:var(--brand)}
+.speedline{margin-top:8px;font-weight:800;font-size:12.5px;color:var(--muted)}
+.speedline b{color:var(--ok-d)}
+.speedtag{display:inline-block;margin-top:6px;background:#e3f7ec;color:var(--ok-d);border-radius:999px;padding:4px 12px;font-weight:900;font-size:12.5px}
+
+/* ================= NÍVEL DE CONEXÃO ================= */
+.fscore{display:flex;flex-direction:column;align-items:flex-end;line-height:1}
+.fscore em{font-style:normal;font-family:var(--font-nunito);font-weight:900;font-size:11px;color:var(--brand-d);margin-top:3px;text-transform:uppercase;letter-spacing:.04em}
+.rk-kicker{font-weight:900;font-size:11px;color:var(--muted);text-transform:uppercase;letter-spacing:.07em;margin-bottom:4px}

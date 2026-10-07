@@ -107,14 +107,29 @@ export function scoreFor(s1: number, s2: number, difficulty: string) {
   return Math.round((s1 + s2) * POINTS_PER_NOTE * (DIFF_MULT[difficulty] ?? 1));
 }
 
-// ---------------- Patentes ----------------
+// ---------------- Nível de conexão ----------------
+// O resultado final é medido em qualidade de conexão. "Claro" é o topo e só sai
+// em caso médio/difícil, quase perfeito e rápido.
 export const RANKS = [
-  { min: 0, name: "Estagiário", emoji: "🐣", say: "Todo mundo começa em algum lugar. O café ainda é por sua conta." },
-  { min: 300, name: "Júnior", emoji: "🌱", say: "Já dá para confiar numa tarefa pequena, com revisão." },
-  { min: 500, name: "Pleno", emoji: "🚀", say: "Bom resultado. Já pode errar sozinho sem avisar ninguém. É um elogio." },
-  { min: 800, name: "Sênior", emoji: "🧠", say: "Resultado de quem já viu muita coisa. Pode sentar na cabeceira da mesa." },
-  { min: 1100, name: "Lenda", emoji: "👑", say: "Eu ia dar um conselho, mas acho que quem aprende aqui sou eu." },
+  { min: 0, name: "Sem conexão", emoji: "🚫", say: "Sem sinal por enquanto. Acontece até com quem é bom; tente outro caso." },
+  { min: 150, name: "Discada", emoji: "📠", say: "Conectou, mas com aquele barulhinho. Dá para melhorar." },
+  { min: 350, name: "2G", emoji: "📶", say: "Já dá para mandar mensagem. Vídeo, ainda não." },
+  { min: 550, name: "3G", emoji: "📶", say: "Sinal estável. Funciona, mas sem pressa." },
+  { min: 750, name: "4G", emoji: "📶", say: "Rápido e confiável. É assim que se trabalha." },
+  { min: 950, name: "5G", emoji: "⚡", say: "Latência baixa, resposta afiada. Pouca gente chega aqui." },
+  { min: 1300, name: "Claro", emoji: "🔴", say: "Nível Claro. Procurei o que melhorar e não achei." },
 ];
+
+// Nota de um argumento (0 a 10) em qualidade de sinal
+export function noteTier(n: number) {
+  if (n <= 1) return "Sem conexão";
+  if (n <= 3) return "Discada";
+  if (n === 4) return "2G";
+  if (n <= 6) return "3G";
+  if (n === 7) return "4G";
+  if (n <= 9) return "5G";
+  return "Claro";
+}
 
 export function rankFor(score: number) {
   let idx = 0;
@@ -169,3 +184,20 @@ export const EPILOGUE: Record<Verdict, string> = {
   resist: "Fim do expediente. O caso ficou em aberto, mas a conversa avançou. Amanhã tem mais.",
   damned: "Fim do expediente. Nem todo dia fecha bem. O que importa é voltar amanhã com um argumento melhor.",
 };
+
+// ---------------- Velocidade ----------------
+// A Claro é rápida: cada argumento enviado rápido ganha bônus no ranking.
+// Só vale com nota >= 5, para não premiar resposta vazia. Não muda o veredito.
+export const SPEED = { full: 40_000, zero: 150_000, max: 100, minNote: 5 };
+
+export function speedBonus(ms: number, note: number) {
+  if (note < SPEED.minNote) return 0;
+  if (ms <= SPEED.full) return SPEED.max;
+  if (ms >= SPEED.zero) return 0;
+  return Math.round(SPEED.max * (1 - (ms - SPEED.full) / (SPEED.zero - SPEED.full)));
+}
+
+export function fmtTime(ms: number) {
+  const s = Math.max(0, Math.round(ms / 1000));
+  return `${Math.floor(s / 60)}:${String(s % 60).padStart(2, "0")}`;
+}

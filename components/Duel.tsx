@@ -9,6 +9,10 @@ import {
   JUDGING_LINES,
   STARTERS_1,
   STARTERS_2,
+  SPEED,
+  fmtTime,
+  noteTier,
+  speedBonus,
   VERDICT_LABEL,
   pingoVerdictLine,
   scoreFor,
@@ -19,7 +23,16 @@ import { playSfx } from "@/lib/sfx";
 import { Pingo, Professor } from "./Signal";
 import { Clock, useTypewriter } from "./Prologue";
 
-export type DuelResult = { persona: Persona; verdict: Verdict; s1: number; s2: number; total: number; score: number; mode: "ai" | "fallback" };
+export type DuelResult = {
+  persona: Persona;
+  verdict: Verdict;
+  s1: number;
+  s2: number;
+  total: number;
+  score: number;
+  speed: { t1: number; t2: number; b1: number; b2: number };
+  mode: "ai" | "fallback";
+};
 
 type Feedback = { score: number; summary: string; good: string; missing: string; study: string; up?: string };
 
@@ -62,7 +75,7 @@ function FeedbackCard({ n, f }: { n: 1 | 2; f: Feedback }) {
           <div className="fkicker">Pingo · argumento {n}</div>
           <div className="fsummary">{f.summary}</div>
         </div>
-        <div className="fscore"><b>{f.score}</b>/10</div>
+        <div className="fscore"><b>{f.score}</b>/10<em>{noteTier(f.score)}</em></div>
       </div>
       {f.good && <div className="frow ok"><span>✓</span><p>{f.good}</p></div>}
       {f.missing && <div className="frow no"><span>✗</span><p>{f.missing}</p></div>}
@@ -92,6 +105,25 @@ function PersonaSays({ p, text, tag, typed }: { p: Persona; text: string; tag?: 
   );
 }
 
+// Cronômetro do argumento: verde enquanto vale o bônus máximo, depois vai caindo.
+function Stopwatch({ startedAt, running }: { startedAt: number; running: boolean }) {
+  const [now, setNow] = useState(() => Date.now());
+  useEffect(() => {
+    if (!running) return;
+    const id = setInterval(() => setNow(Date.now()), 250);
+    return () => clearInterval(id);
+  }, [running]);
+  const ms = Math.max(0, now - startedAt);
+  const bonus = speedBonus(ms, 10);
+  const cls = ms <= SPEED.full ? "fast" : bonus > 0 ? "mid" : "slow";
+  return (
+    <div className={"stopwatch " + cls}>
+      <span>⚡ {fmtTime(ms)}</span>
+      <em>{bonus > 0 ? `bônus de velocidade +${bonus}` : "sem bônus de velocidade"}</em>
+    </div>
+  );
+}
+
 function Composer({
   label,
   value,
@@ -101,6 +133,7 @@ function Composer({
   err,
   onSend,
   placeholder,
+  startedAt,
 }: {
   label: string;
   value: string;
@@ -110,6 +143,7 @@ function Composer({
   err: string;
   onSend: () => void;
   placeholder: string;
+  startedAt: number;
 }) {
   const ref = useRef<HTMLTextAreaElement>(null);
   function addStarter(s: string) {
@@ -129,6 +163,7 @@ function Composer({
   return (
     <div className="pad composer">
       <div className="alabel">{label}</div>
+      <Stopwatch startedAt={startedAt} running={!busy} />
       <div className="starters">
         {starters.map((s) => (
           <button key={s} type="button" className="starter" disabled={busy} onClick={() => addStarter(s)}>{s}…</button>
@@ -147,7 +182,21 @@ function Composer({
   );
 }
 
-function VerdictReveal({ p, s1, s2, mode, onNext }: { p: Persona; s1: number; s2: number; mode: "ai" | "fallback"; onNext: () => void }) {
+function VerdictReveal({
+  p,
+  s1,
+  s2,
+  speed,
+  mode,
+  onNext,
+}: {
+  p: Persona;
+  s1: number;
+  s2: number;
+  speed: DuelResult["speed"];
+  mode: "ai" | "fallback";
+  onNext: () => void;
+}) {
   const total = s1 + s2;
   const v = verdictFor(total, p.dc);
   const [stage, setStage] = useState(0); // 0 enchendo, 1 veredito, 2 reação
@@ -173,9 +222,12 @@ function VerdictReveal({ p, s1, s2, mode, onNext }: { p: Persona; s1: number; s2
         <div className="dcmark" style={{ left: `${(p.dc / 20) * 100}%` }}><span>DC {p.dc}</span></div>
       </div>
       <div className="mlegend">
-        <span>Arg. 1 <b>{s1}</b></span>
-        <span>Arg. 2 <b>{s2}</b></span>
+        <span>Arg. 1 <b>{s1}</b> {noteTier(s1)}</span>
+        <span>Arg. 2 <b>{s2}</b> {noteTier(s2)}</span>
         <span>Total <b>{total}</b>/20</span>
+      </div>
+      <div className="speedline">
+        ⚡ Velocidade: {fmtTime(speed.t1)} <b>+{speed.b1}</b> · {fmtTime(speed.t2)} <b>+{speed.b2}</b>
       </div>
 
       <AnimatePresence>
@@ -215,6 +267,10 @@ export function Duel({ persona, onExit, onDone }: { persona: Persona; onExit: ()
   const [err, setErr] = useState("");
   const [mode, setMode] = useState<"ai" | "fallback">("ai");
   const anchor = useRef<HTMLDivElement>(null);
+  const [start1, setStart1] = useState(0);
+  const [start2, setStart2] = useState(0);
+  const [t1, setT1] = useState(0);
+  const [t2, setT2] = useState(0);
 
   // leva a tela até o novo bloco (feedback, réplica, veredito)
   useEffect(() => {
@@ -222,6 +278,7 @@ export function Duel({ persona, onExit, onDone }: { persona: Persona; onExit: ()
   }, [phase]);
 
   async function sendFirst() {
+    setT1(Date.now() - start1);
     setErr("");
     setPhase("judging1");
     playSfx("tap", 0.4);
@@ -234,6 +291,8 @@ export function Duel({ persona, onExit, onDone }: { persona: Persona; onExit: ()
       setF1(j);
       setContra(c.text);
       playSfx(j.score >= 5 ? "correct" : "wrong");
+      // o relógio do 2º argumento só começa depois que a réplica termina de aparecer
+      setStart2(Date.now() + c.text.length * 20);
       setPhase("a2");
     } catch {
       setErr("O sinal falhou. Tente enviar novamente.");
@@ -243,6 +302,7 @@ export function Duel({ persona, onExit, onDone }: { persona: Persona; onExit: ()
 
   async function sendSecond() {
     if (!f1) return;
+    setT2(Math.max(0, Date.now() - start2));
     setErr("");
     setPhase("judging2");
     playSfx("tap", 0.4);
@@ -288,8 +348,17 @@ export function Duel({ persona, onExit, onDone }: { persona: Persona; onExit: ()
                 <div key={c.label} className="crit"><span>{c.label}</span><em>{c.hint}</em><b>{c.max} pts</b></div>
               ))}
               <div className="bcrit-f">Dois argumentos. Para convencer, a soma precisa chegar a <b>{persona.dc}</b> de 20.{persona.difficulty !== "FÁCIL" && <> Caso {persona.difficulty.toLowerCase()} vale <b>×{DIFF_MULT[persona.difficulty]}</b> no ranking.</>}</div>
+              <div className="bcrit-s">⚡ <b>A Claro é rápida.</b> Envie cada argumento em até {SPEED.full / 1000}s e ganhe até +{SPEED.max} pontos no ranking (com nota {SPEED.minNote} ou mais).</div>
             </div>
-            <button className="cta g" onClick={() => setPhase("a1")}>Entrar na conversa</button>
+            <button
+              className="cta g"
+              onClick={() => {
+                setStart1(Date.now() + persona.question.length * 20);
+                setPhase("a1");
+              }}
+            >
+              Entrar na conversa
+            </button>
           </motion.div>
         ) : (
           <>
@@ -305,6 +374,7 @@ export function Duel({ persona, onExit, onDone }: { persona: Persona; onExit: ()
             onChange={setA1}
             starters={STARTERS_1}
             busy={phase === "judging1"}
+            startedAt={start1}
             err={err}
             onSend={sendFirst}
             placeholder="Explique com suas palavras. Conceito, exemplo e uma ação concreta valem pontos."
@@ -327,6 +397,7 @@ export function Duel({ persona, onExit, onDone }: { persona: Persona; onExit: ()
             onChange={setA2}
             starters={STARTERS_2}
             busy={phase === "judging2"}
+            startedAt={start2}
             err={err}
             onSend={sendSecond}
             placeholder="Aprofunde. Enfrente a objeção sem repetir o que já disse."
@@ -342,10 +413,21 @@ export function Duel({ persona, onExit, onDone }: { persona: Persona; onExit: ()
               p={persona}
               s1={f1.score}
               s2={f2.score}
+              speed={{ t1, t2, b1: speedBonus(t1, f1.score), b2: speedBonus(t2, f2.score) }}
               mode={mode}
               onNext={() => {
                 const total = f1.score + f2.score;
-                onDone({ persona, verdict: verdictFor(total, persona.dc), s1: f1.score, s2: f2.score, total, score: scoreFor(f1.score, f2.score, persona.difficulty), mode });
+                const speed = { t1, t2, b1: speedBonus(t1, f1.score), b2: speedBonus(t2, f2.score) };
+                onDone({
+                  persona,
+                  verdict: verdictFor(total, persona.dc),
+                  s1: f1.score,
+                  s2: f2.score,
+                  total,
+                  score: scoreFor(f1.score, f2.score, persona.difficulty) + speed.b1 + speed.b2,
+                  speed,
+                  mode,
+                });
               }}
             />
           </>
