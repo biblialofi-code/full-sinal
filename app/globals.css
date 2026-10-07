@@ -392,3 +392,4 @@ body{
 .stopwatch span{font-variant-numeric:tabular-nums;letter-spacing:.02em}
 .speedline{font-variant-numeric:tabular-nums}
 .stopwatch span{font-size:24px}
+.stopwatch em b{font-family:var(--font-fredoka);font-weight:600;font-size:16px;font-variant-numeric:tabular-nums}

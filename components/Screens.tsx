@@ -144,7 +144,7 @@ export function Result({
         <div className="re">{rank.emoji}</div>
         <div className="rn">{rank.name}</div>
         <div className="sub">{VERDICT_LABEL[r.verdict]} · {r.persona.name} · {r.total}/20 (precisava de {r.persona.dc})</div>
-        {r.speed.b1 + r.speed.b2 > 0 && <div className="speedtag">⚡ +{r.speed.b1 + r.speed.b2} de velocidade</div>}
+        {r.speed.b1 + r.speed.b2 > 0 && <div className="speedtag">⚡ {r.speed.b1 + r.speed.b2} Mb de velocidade</div>}
       </motion.div>
 
       <div className="profrow" style={{ marginTop: 14 }}>

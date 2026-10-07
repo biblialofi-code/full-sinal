@@ -188,7 +188,8 @@ export const EPILOGUE: Record<Verdict, string> = {
 // ---------------- Velocidade ----------------
 // A Claro é rápida: cada argumento enviado rápido ganha bônus no ranking.
 // Só vale com nota >= 5, para não premiar resposta vazia. Não muda o veredito.
-export const SPEED = { full: 40_000, zero: 150_000, max: 100, minNote: 5 };
+// Velocidade em Mb: 100 Mb até 10s, depois cai até 0 Mb em 2 minutos.
+export const SPEED = { full: 10_000, zero: 120_000, max: 100, minNote: 5 };
 
 export function speedBonus(ms: number, note: number) {
   if (note < SPEED.minNote) return 0;

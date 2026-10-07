@@ -125,7 +125,7 @@ function Stopwatch({ startedAt, running }: { startedAt: number; running: boolean
   return (
     <div className={"stopwatch " + cls}>
       <span>⚡ {fmtTime(ms)}</span>
-      <em>{bonus > 0 ? `bônus de velocidade +${bonus}` : "sem bônus de velocidade"}</em>
+      <em>velocidade <b>{bonus} Mb</b></em>
     </div>
   );
 }
@@ -233,7 +233,7 @@ function VerdictReveal({
         <span>Total <b>{total}</b>/20</span>
       </div>
       <div className="speedline">
-        ⚡ Velocidade: {fmtTime(speed.t1)} <b>+{speed.b1}</b> · {fmtTime(speed.t2)} <b>+{speed.b2}</b>
+        ⚡ Velocidade: {fmtTime(speed.t1)} <b>{speed.b1} Mb</b> · {fmtTime(speed.t2)} <b>{speed.b2} Mb</b>
       </div>
 
       <AnimatePresence>
@@ -354,7 +354,7 @@ export function Duel({ persona, onExit, onDone }: { persona: Persona; onExit: ()
                 <div key={c.label} className="crit"><span>{c.label}</span><em>{c.hint}</em><b>{c.max} pts</b></div>
               ))}
               <div className="bcrit-f">Dois argumentos. Para convencer, a soma precisa chegar a <b>{persona.dc}</b> de 20.{persona.difficulty !== "FÁCIL" && <> Caso {persona.difficulty.toLowerCase()} vale <b>×{DIFF_MULT[persona.difficulty]}</b> no ranking.</>}</div>
-              <div className="bcrit-s">⚡ <b>A Claro é rápida.</b> Envie cada argumento em até {SPEED.full / 1000}s e ganhe até +{SPEED.max} pontos no ranking (com nota {SPEED.minNote} ou mais).</div>
+              <div className="bcrit-s">⚡ <b>A Claro é rápida.</b> Cada argumento começa valendo {SPEED.max} Mb de velocidade, que vão caindo depois de {SPEED.full / 1000}s. Os Mb entram no ranking se a nota for {SPEED.minNote} ou mais.</div>
             </div>
             <button
               className="cta g"
